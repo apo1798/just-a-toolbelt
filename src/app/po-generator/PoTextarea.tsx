@@ -6,53 +6,110 @@ import { useState } from "react";
 import PoTextCard from "~/app/po-generator/PoTextCard";
 
 import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 
 const poInputAtom = atomWithStorage("poInput", "");
 
 const PoTextarea = () => {
-  const [poInput, setPoInput] = useAtom(poInputAtom);
   const [separator, setSeparator] = useState("\\t");
+  const [excludeKeyWords, setExcludeKeyWords] = useState("(已有)");
+  const [poInput, setPoInput] = useAtom(poInputAtom);
 
-  const correspondingText = poInput.split("\n").map((item) => {
-    let inputSeperator = separator;
-    if (inputSeperator in escapeCodes) {
-      inputSeperator = escapeCodes[inputSeperator as keyof typeof escapeCodes];
-    }
-    return item.split(inputSeperator);
-  });
-  // console.log({ separator, poInput });
-  console.log({ correspondingText });
+  const correspondingText =
+    poInput &&
+    poInput
+      .split("\n")
+      .map((item) => {
+        let inputSeparator = separator;
+        if (inputSeparator in escapeCodes) {
+          inputSeparator =
+            escapeCodes[inputSeparator as keyof typeof escapeCodes];
+        }
+        console.log(item.split(inputSeparator));
+        return item.split(inputSeparator);
+      })
+      .filter((item) => {
+        if (!excludeKeyWords) return true;
+        return !item.at(0)?.includes(excludeKeyWords);
+      });
+
   const keyLength = correspondingText?.at(0)?.length ?? 0;
 
   return (
-    <section className="my-10 space-y-4">
-      <div className="flex flex-wrap gap-x-2">
-        <h2>請貼上 Notion Table 複製來的內容</h2>
-      </div>
-      <Input
-        value={separator}
-        onChange={(e) => setSeparator(e.target.value)}
-        className="h-9 max-w-xs px-2 py-1 leading-3"
-      />
-      <div className="space-y-12 md:flex">
-        <Textarea
-          value={poInput}
-          onChange={(e) => setPoInput(e.target.value)}
-          className="min-h-[20rem]"
-        />
-      </div>
-      {Array.from({ length: keyLength }).map((_, i) => {
-        return (
-          <PoTextCard
-            key={i}
-            textArray={correspondingText}
-            number={i}
-            isLast={keyLength === i + 1}
+    <div className="my-8 flex min-w-0 flex-col gap-10 lg:flex-row">
+      <section className="shrink-0 grow basis-1/2 space-y-4">
+        <div className="space-y-1">
+          <Label htmlFor="separator" className="text-primary">
+            分隔符號
+          </Label>
+          <Input
+            id="separator"
+            value={separator}
+            onChange={(e) => setSeparator(e.target.value)}
+            className="h-9 max-w-xs px-2 py-1 leading-3"
+            placeholder="\t"
           />
-        );
-      })}
-    </section>
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="exclude-key-words" className="text-primary">
+            當 key 包含以下內容時，排除
+          </Label>
+          <Input
+            id="exclude-key-words"
+            value={excludeKeyWords}
+            onChange={(e) => setExcludeKeyWords(e.target.value)}
+            className="h-9 max-w-xs px-2 py-1 leading-3"
+            placeholder="已有"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="po-input" className="text-primary">
+            翻譯表格內容
+          </Label>
+          <Textarea
+            id="po-input"
+            value={poInput}
+            onChange={(e) => setPoInput(e.target.value)}
+            className="min-h-[20rem]"
+            placeholder="download  下載  download"
+          />
+        </div>
+      </section>
+
+      <section className="grow basis-1/2 space-y-3">
+        {Array.from({ length: keyLength }).map((_, i) => {
+          if (!correspondingText) return null;
+          const isLast = keyLength === i + 1;
+          let hasNoMatchingValue = false;
+          const generatedText =
+            correspondingText
+              .map((text) => {
+                const matchingValue = text.at(i + 1);
+
+                if (!matchingValue && !isLast) {
+                  hasNoMatchingValue = true;
+                }
+
+                return `msgid "${text.at(0)}"\nmsgstr "${
+                  matchingValue ?? ""
+                }"\n`;
+              })
+              .join("\n") + "\n";
+
+          return (
+            <PoTextCard
+              key={i}
+              generatedText={generatedText}
+              hasNoMatchingValue={hasNoMatchingValue}
+              number={i}
+            />
+          );
+        })}
+      </section>
+    </div>
   );
 };
 export default PoTextarea;

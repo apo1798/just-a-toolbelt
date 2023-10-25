@@ -21,29 +21,15 @@ import {
 } from "~/components/ui/tooltip";
 
 type Props = {
-  textArray: Array<Array<string>>;
   number: number;
-  isLast: boolean;
+  generatedText: string;
+  hasNoMatchingValue: boolean;
 };
 
-const PoTextCard = ({ textArray, number, isLast }: Props) => {
+const PoTextCard = ({ number, generatedText, hasNoMatchingValue }: Props) => {
   const [isCardOpen, setIsCardOpen] = useState(true);
   const [isCopySuccess, setIsCopySuccess] = useState(false);
   const timerRef = useRef<number | null>(null);
-
-  let hasNoMatchingValue = false;
-  const generatedText =
-    textArray
-      .map((text) => {
-        const matchingValue = text.at(number + 1);
-
-        if (!matchingValue && !isLast) {
-          hasNoMatchingValue = true;
-        }
-
-        return `msgid "${text.at(0)}"\nmsgstr "${matchingValue ?? ""}"\n`;
-      })
-      .join("\n") + "\n";
 
   return (
     <Collapsible open={isCardOpen} onOpenChange={setIsCardOpen}>
@@ -58,56 +44,52 @@ const PoTextCard = ({ textArray, number, isLast }: Props) => {
               </span>
             )}
           </CardTitle>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  aria-label="copy"
-                  className="px-2"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(generatedText);
-                      setIsCopySuccess(true);
+          <div className="ml-auto inline-flex items-center gap-2">
+            <CollapsibleTrigger asChild>
+              <Button className="inline-flex justify-between" variant="ghost">
+                <span>{isCardOpen ? "收合" : "展開"}</span>
+                <span>{isCardOpen ? <ChevronUp /> : <ChevronDown />}</span>
+              </Button>
+            </CollapsibleTrigger>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    aria-label="copy"
+                    className="px-2"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(generatedText);
+                        setIsCopySuccess(true);
 
-                      timerRef.current = window.setTimeout(
-                        () => setIsCopySuccess(false),
-                        2000,
-                      );
-                    } catch (e) {
-                      //pass
-                    }
-                  }}
-
-                  // variant={isCopySuccess ? "outline" : "default"}
-                >
-                  {isCopySuccess ? (
-                    <Check className="h-6 w-6 text-green-700" />
-                  ) : (
-                    <Copy className="h-6 w-6" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>複製</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+                        timerRef.current = window.setTimeout(
+                          () => setIsCopySuccess(false),
+                          2000,
+                        );
+                      } catch (e) {
+                        //pass
+                      }
+                    }}
+                  >
+                    {isCopySuccess ? (
+                      <Check className="h-6 w-6 text-green-700" />
+                    ) : (
+                      <Copy className="h-6 w-6" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>複製</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </CardHeader>
         <CollapsibleContent>
-          <CardContent className="mx-6 mb-4 whitespace-pre rounded border-2 border-primary p-2 text-sm">
+          <CardContent className="border-primary mx-6 mb-4 whitespace-pre-line rounded border-2 p-2 text-sm">
             {generatedText}
           </CardContent>
         </CollapsibleContent>
-        <CardFooter>
-          <CollapsibleTrigger asChild>
-            <Button
-              className="inline-flex w-full justify-between"
-              variant="ghost"
-            >
-              <span>{isCardOpen ? "收合" : "展開"}</span>
-              <span>{isCardOpen ? <ChevronUp /> : <ChevronDown />}</span>
-            </Button>
-          </CollapsibleTrigger>
-        </CardFooter>
+        <CardFooter></CardFooter>
       </Card>
     </Collapsible>
   );
