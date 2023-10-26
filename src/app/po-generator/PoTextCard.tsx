@@ -85,7 +85,7 @@ const PoTextCard = ({ number, generatedText, hasNoMatchingValue }: Props) => {
           </div>
         </CardHeader>
         <CollapsibleContent>
-          <CardContent className="border-primary mx-6 mb-4 whitespace-pre-line rounded border-2 p-2 text-sm">
+          <CardContent className="mx-6 mb-4 whitespace-pre-line break-words rounded border-2 border-primary p-2">
             {generatedText}
           </CardContent>
         </CollapsibleContent>
