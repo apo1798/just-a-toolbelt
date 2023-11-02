@@ -1,5 +1,6 @@
 import { Check, ChevronDown, ChevronUp, Copy, FileWarning } from "lucide-react";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -67,6 +68,7 @@ const PoTextCard = ({ number, generatedText, hasNoMatchingValue }: Props) => {
                           () => setIsCopySuccess(false),
                           2000,
                         );
+                        toast.success("Copied!");
                       } catch (e) {
                         //pass
                       }

@@ -5,6 +5,7 @@ import { cn } from "~/lib/utils";
 import { ThemeProvider } from "~/components/ui/theme-provider";
 import { ThemeToggleDropdown } from "~/components/dropdown/ThemeToggleButton";
 import { Wrench } from "lucide-react";
+import { Toaster } from "sonner";
 
 export const fontSans = FontSans({
   subsets: ["latin"],
@@ -28,7 +29,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          "bg-background min-h-screen font-sans antialiased",
+          "min-h-screen bg-background font-sans antialiased",
           fontSans.variable,
         )}
       >
@@ -38,7 +39,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="border-primary fixed w-full border-b backdrop-blur ">
+          <div className="fixed w-full border-b border-primary backdrop-blur ">
             <header className="container flex w-full items-center justify-between py-2 text-xl font-medium backdrop-blur">
               <div className="inline-flex items-center gap-2">
                 <Wrench className="text-yellow-400" />
@@ -51,6 +52,7 @@ export default function RootLayout({
           </div>
           <div className="mb-6 h-[4rem]" />
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
