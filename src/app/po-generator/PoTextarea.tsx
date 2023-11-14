@@ -90,7 +90,7 @@ const PoTextarea = () => {
             id="po-input"
             value={poInput}
             onChange={(e) => setPoInput(e.target.value)}
-            className="min-h-[20rem]"
+            className="min-h-[20rem] text-sm"
             placeholder="download  下載  download"
           />
         </div>
