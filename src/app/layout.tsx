@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 import { cn } from "~/lib/utils";
 import { ThemeProvider } from "~/components/ui/theme-provider";
@@ -7,11 +6,6 @@ import { ThemeToggleDropdown } from "~/components/dropdown/ThemeToggleButton";
 import { Wrench } from "lucide-react";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
-
-export const fontSans = FontSans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -28,12 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable,
-        )}
-      >
+      <body className={cn("min-h-screen bg-background font-sans antialiased")}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
