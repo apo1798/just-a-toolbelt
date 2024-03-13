@@ -140,22 +140,17 @@ const PoTextarea = () => {
           const isLast = keyLength === i + 1;
           let hasNoMatchingValue = false;
 
-          console.log({ correspondingText });
+          const generatedText = correspondingText
+            .map((text) => {
+              const matchingValue = text.at(i + 1);
 
-          const generatedText =
-            correspondingText
-              .map((text) => {
-                const matchingValue = text.at(i + 1);
+              if (!matchingValue && !isLast) {
+                hasNoMatchingValue = true;
+              }
 
-                if (!matchingValue && !isLast) {
-                  hasNoMatchingValue = true;
-                }
-
-                return `msgid "${text.at(0)}"\nmsgstr "${
-                  matchingValue ?? ""
-                }"\n`;
-              })
-              .join("\n") + "\n";
+              return `msgid "${text.at(0)}"\nmsgstr "${matchingValue ?? ""}"\n`;
+            })
+            .join("\n");
 
           return (
             <PoTextCard

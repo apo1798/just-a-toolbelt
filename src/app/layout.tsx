@@ -6,6 +6,7 @@ import { ThemeProvider } from "~/components/ui/theme-provider";
 import { ThemeToggleDropdown } from "~/components/dropdown/ThemeToggleButton";
 import { Wrench } from "lucide-react";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 
 export const fontSans = FontSans({
   subsets: ["latin"],
@@ -52,6 +53,7 @@ export default function RootLayout({
           </div>
           <div className="mb-6 h-[4rem]" />
           {children}
+          <Analytics />
           <Toaster />
         </ThemeProvider>
       </body>
