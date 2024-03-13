@@ -6,6 +6,7 @@ import { ThemeToggleDropdown } from "~/components/dropdown/ThemeToggleButton";
 import { Wrench } from "lucide-react";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: {
@@ -43,6 +44,7 @@ export default function RootLayout({
           <div className="mb-6 h-[4rem]" />
           {children}
           <Analytics />
+          <SpeedInsights />
           <Toaster />
         </ThemeProvider>
       </body>
