@@ -2,20 +2,30 @@
 
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
-import PoTextCard from "~/app/po-generator/PoTextCard";
+import { z } from "zod";
 
+import PoTextCard from "~/app/po-generator/PoTextCard";
+import { RepeatedKeyWarning } from "~/app/po-generator/RepetedKeyWarning";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 
 const poInputAtom = atomWithStorage("poInput", "");
+const contentTypeAtom = atomWithStorage<"po" | "json">("contentType", "po");
 
 const PoTextarea = () => {
   const [separator, setSeparator] = useState("\\t");
   const [excludeKeyWords, setExcludeKeyWords] = useState("(已有)");
   const [poInput, setPoInput] = useAtom(poInputAtom);
+  const [contentType, setContentType] = useAtom(contentTypeAtom);
 
   let replacedSeparator = separator;
   if (replacedSeparator in escapeCodes) {
@@ -36,7 +46,7 @@ const PoTextarea = () => {
       });
 
   const keyLength = correspondingText?.at(0)?.length ?? 0;
-  const keyCounts =
+  const repeatedKeyCounts =
     Array.isArray(correspondingText) &&
     correspondingText.reduce(
       (acc, cur) => {
@@ -50,8 +60,9 @@ const PoTextarea = () => {
       },
       {} as Record<string, number>,
     );
-  const hasRepeatedKeys = Object.values(keyCounts).some((count) => count > 1);
-  const isShowWarning = hasRepeatedKeys;
+  const hasRepeatedKeys = Object.values(repeatedKeyCounts).some(
+    (count) => count > 1,
+  );
 
   return (
     <div className="my-8 flex min-w-0 flex-col gap-10 lg:flex-row">
@@ -94,70 +105,46 @@ const PoTextarea = () => {
             placeholder="download  下載  download"
           />
         </div>
-        {isShowWarning && (
-          <section className="space-y-2 bg-destructive px-3 py-3">
-            {hasRepeatedKeys && (
-              <>
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-6 w-6" />
-                  <h3>Repeated key warning</h3>
-                </div>
-                <table className="w-full border-collapse space-y-1">
-                  <thead>
-                    <tr>
-                      <th className="border-2 border-border px-3 py-0.5">
-                        Key
-                      </th>
-                      <th className="border-2 border-border px-3 py-0.5">
-                        Count
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(keyCounts)
-                      .filter(([, count]) => count > 1)
-                      .map(([key, count]) => (
-                        <tr key={key}>
-                          <td className="border-2 border-border px-3 py-0.5 text-center">
-                            {key}
-                          </td>
-                          <td className="border-2 border-border px-3 py-0.5 text-center">
-                            {count}
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </>
-            )}
-          </section>
+        {hasRepeatedKeys && (
+          <RepeatedKeyWarning repeatedKeyCounts={repeatedKeyCounts} />
         )}
       </section>
 
       <section className="grow basis-1/2 space-y-3">
+        <div className="flex items-center gap-x-4">
+          <div className="text-yellow-400">內容格式</div>
+          <Select
+            value={contentType}
+            onValueChange={(value) => {
+              const result = z.enum(["json", "po"]).safeParse(value);
+              if (result.success) {
+                setContentType(result.data);
+              }
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="請選擇內容格式" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="po">PO</SelectItem>
+              <SelectItem value="json">JSON</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <hr />
+
         {Array.from({ length: keyLength }).map((_, i) => {
           if (!correspondingText) return null;
           const isLast = keyLength === i + 1;
-          let hasNoMatchingValue = false;
-
-          const generatedText = correspondingText
-            .map((text) => {
-              const matchingValue = text.at(i + 1);
-
-              if (!matchingValue && !isLast) {
-                hasNoMatchingValue = true;
-              }
-
-              return `msgid "${text.at(0)}"\nmsgstr "${matchingValue ?? ""}"\n`;
-            })
-            .join("\n");
 
           return (
             <PoTextCard
               key={i}
-              generatedText={generatedText}
-              hasNoMatchingValue={hasNoMatchingValue}
-              number={i}
+              text={correspondingText}
+              index={i}
+              isLast={isLast}
+              contentType={contentType}
             />
           );
         })}

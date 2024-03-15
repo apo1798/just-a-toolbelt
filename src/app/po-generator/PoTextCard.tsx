@@ -16,22 +16,64 @@ import {
 } from "~/components/ui/tooltip";
 
 type Props = {
-  number: number;
-  generatedText: string;
-  hasNoMatchingValue: boolean;
+  index: number;
+  text: string[][];
+  isLast: boolean;
+  contentType: "po" | "json";
 };
 
-const PoTextCard = ({ number, generatedText, hasNoMatchingValue }: Props) => {
+const PoTextCard = ({ index, text, isLast, contentType }: Props) => {
   const [isCardOpen, setIsCardOpen] = useState(true);
   const [isCopySuccess, setIsCopySuccess] = useState(false);
   const timerRef = useRef<number | null>(null);
+
+  let hasNoMatchingValue = false;
+
+  const getText = (texts: string[][], contentType: "po" | "json") => {
+    switch (contentType) {
+      case "po": {
+        const result = texts
+          .map((text) => {
+            const matchingValue = text.at(index + 1);
+
+            if (!matchingValue && !isLast) {
+              hasNoMatchingValue = true;
+            }
+
+            return `msgid "${text.at(0)}"\nmsgstr "${matchingValue ?? ""}"\n`;
+          })
+          .join("\n");
+
+        return result;
+      }
+      case "json": {
+        const result = texts.reduce(
+          (acc, cur) => {
+            if (!cur.at(index) && !isLast) {
+              hasNoMatchingValue = true;
+            }
+            acc[cur.at(0)!] = cur.at(index + 1) ?? "";
+
+            return acc;
+          },
+          {} as Record<string, string>,
+        );
+        return JSON.stringify(result, null, 2);
+      }
+      default: {
+        return "";
+      }
+    }
+  };
+
+  const generatedText = getText(text, contentType);
 
   return (
     <Collapsible open={isCardOpen} onOpenChange={setIsCardOpen}>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="space-x-2">
-            <span>PO Section {number + 1}</span>
+            <span>Section {index + 1}</span>
             {hasNoMatchingValue && (
               <span className="inline-flex items-center gap-1 text-sm text-red-500">
                 <FileWarning className="h-4 w-4" />
@@ -81,7 +123,7 @@ const PoTextCard = ({ number, generatedText, hasNoMatchingValue }: Props) => {
           </div>
         </CardHeader>
         <CollapsibleContent>
-          <CardContent className="mx-6 mb-4 whitespace-pre-line break-words rounded border-2 border-primary p-2 font-mono text-sm font-medium">
+          <CardContent className="mx-6 mb-4 whitespace-pre-wrap break-words rounded border-2 border-primary p-2 font-mono text-sm font-medium">
             {generatedText}
           </CardContent>
         </CollapsibleContent>
