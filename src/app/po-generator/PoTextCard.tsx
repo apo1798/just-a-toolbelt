@@ -40,7 +40,7 @@ const PoTextCard = ({ index, text, isLast, contentType }: Props) => {
               hasNoMatchingValue = true;
             }
 
-            return `msgid "${text.at(0)}"\nmsgstr "${matchingValue ?? ""}"\n`;
+            return `msgid "${text.at(0)}"\nmsgstr "${matchingValue?.replaceAll(`"`, `\\"`) ?? ""}"\n`;
           })
           .join("\n");
 
