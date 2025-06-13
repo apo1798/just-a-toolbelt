@@ -33,17 +33,34 @@ const PoTextarea = () => {
       escapeCodes[replacedSeparator as keyof typeof escapeCodes];
   }
 
-  const correspondingText =
-    poInput &&
-    poInput
-      .split("\n")
-      .map((item) => {
-        return item.split(replacedSeparator);
-      })
-      .filter((item) => {
-        if (!excludeKeyWords) return true;
-        return !item.at(0)?.includes(excludeKeyWords);
-      });
+  const preSplitText = poInput
+    .split("\n")
+    .map((item) => {
+      return item.split(replacedSeparator);
+    })
+    .reduce((acc, cur) => {
+      const pattern = /[a-zA-Z.]/;
+      const isCorrectKeySplit =
+        pattern.test(cur?.at(0) ?? "") &&
+        cur?.at(0)?.replace(/.$/, "")?.includes(".");
+
+      if (!isCorrectKeySplit) {
+        const updatedLastItem = [
+          ...(acc?.at(-1)?.slice(0, -1) ?? []),
+          (acc?.at(-1)?.at(-1) ?? "") + "\\n" + cur?.at(0),
+          ...cur.slice(1),
+        ];
+        acc[acc.length - 1] = updatedLastItem;
+      } else {
+        acc.push(cur);
+      }
+      return acc;
+    }, [] as string[][]);
+
+  const correspondingText = preSplitText.filter((item) => {
+    if (!excludeKeyWords) return true;
+    return !item.at(0)?.includes(excludeKeyWords);
+  });
 
   const keyLength = correspondingText?.at(0)?.length ?? 0;
   const repeatedKeyCounts =
