@@ -39,10 +39,14 @@ const PoTextarea = () => {
       return item.split(replacedSeparator);
     })
     .reduce((acc, cur) => {
-      const pattern = /[a-zA-Z.]/;
+      const pattern = /^[a-zA-Z][a-zA-Z0-9.]*$/;
       const isCorrectKeySplit =
         pattern.test(cur?.at(0) ?? "") &&
         cur?.at(0)?.replace(/.$/, "")?.includes(".");
+      console.log({ isCorrectKeySplit }, cur, {
+        1: pattern.test(cur?.at(0) ?? ""),
+        2: cur?.at(0)?.replace(/.$/, "")?.includes("."),
+      });
 
       if (!isCorrectKeySplit) {
         const updatedLastItem = [
