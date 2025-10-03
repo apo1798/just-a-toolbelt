@@ -43,10 +43,6 @@ const PoTextarea = () => {
       const isCorrectKeySplit =
         pattern.test(cur?.at(0) ?? "") &&
         cur?.at(0)?.replace(/.$/, "")?.includes(".");
-      console.log({ isCorrectKeySplit }, cur, {
-        1: pattern.test(cur?.at(0) ?? ""),
-        2: cur?.at(0)?.replace(/.$/, "")?.includes("."),
-      });
 
       if (!isCorrectKeySplit) {
         const updatedLastItem = [
